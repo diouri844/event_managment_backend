@@ -1,0 +1,16 @@
+
+services:
+  db:
+    image: postgres:15
+    container_name: flask_postgres_event_sass
+    environment:
+      POSTGRES_USER: flaskuser
+      POSTGRES_PASSWORD: flaskpass
+      POSTGRES_DB: flaskdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/event_sass_data/event_sass_backend
+
+volumes:
+  pgdata:
