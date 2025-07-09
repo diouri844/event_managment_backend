@@ -2,7 +2,7 @@
 # time to setting up a sqlAlchemy model 
 
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, ForeignKey,relationship
+from sqlalchemy.orm import Mapped, mapped_column,relationship
 from src import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,8 +15,8 @@ class User(db.Model):
     username: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str]
     password: Mapped[str]
-    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
-    role = relationship("Role", back_populates="users", ondelete="CASCADE")    
+    role_id: Mapped[int] = mapped_column("roles.id")
+    role = relationship("Role", back_populates="users")    
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, 
