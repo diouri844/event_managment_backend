@@ -36,7 +36,8 @@ def get_users():
         }
         return jsonify(res_object), 200
     except Exception as e:
-        return jsonify({"error": "Server failed to fetch user list "}), 500
+        print(f"Error fetching users: {e}")
+        return jsonify({"message": "Server failed to fetch user list "}), 500
     
 
 @users_bp.route("/users/<int:user_id>", methods=["GET"])

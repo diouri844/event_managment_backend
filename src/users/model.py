@@ -1,31 +1,32 @@
-
 # time to setting up a sqlAlchemy model 
 
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column,relationship
+from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-
-
 class User(db.Model):
+    __tablename__ = "users"
+    __table_args__ = {"extend_existing": True}
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str]
     password: Mapped[str]
-    role_id: Mapped[int] = mapped_column("roles.id")
-    role = relationship("Role", back_populates="users")    
+    roles: Mapped[list["Role"]] = relationship(
+        "Role",  # Use string reference to avoid circular import
+        secondary="user_roles",
+        back_populates="users",
+    )
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         default=datetime.utcnow, 
         onupdate=datetime.utcnow
     )
-    __tablename__ = "users"
-    __table_args__ = {"extend_existing": True}
+    
     def __repr__(self):
-        return f"<User {self.username}, {self.email}, {self.role}>"
+        return f"<User {self.username}, {self.email}, {self.roles}>"
     
     def set_password(self, password: str):
         self.password = generate_password_hash(password)
@@ -34,5 +35,5 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
 
-    
+
 
