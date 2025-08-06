@@ -1,13 +1,7 @@
 import { Hono } from 'hono'
-
+import homeController from "./controllers/index";
 const app = new Hono()
 
-app.get('/', (c) => {
-  return c.json({
-    message: 'Hello, World!',
-    timestamp: new Date().toISOString(),
-    status: 'success',
-  })
-})
-
+app.get('/', homeController.home.ping)
+app.get('/test', homeController.home.test)
 export default app
