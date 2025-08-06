@@ -4,10 +4,18 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:migrate": "drizzle-kit push --config=src/config/drizzle.config.ts",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "hono": "^4.8.12"
+    "@neondatabase/serverless": "^1.0.1",
+    "dotenv": "^17.2.1",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.4",
+    "hono": "^4.8.12",
+    "postgres": "^3.4.7",
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "wrangler": "^4.4.0"
