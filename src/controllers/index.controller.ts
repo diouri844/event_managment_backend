@@ -1,6 +1,6 @@
 import { Context } from "hono";
-import { products } from "../Db/schema";
 import { db } from "../utils/instance.db";
+import { Users } from "../Db/schema";
 
 export function ping(c: Context) {
     return c.json({
@@ -13,7 +13,7 @@ export function ping(c: Context) {
 export async function test(c: Context) {
     try {
         // try to hit the database : 
-        const result = await db.select().from(products);
+        const result = await db.select().from(Users);
         return c.json({
             data: result,
             message: 'Test endpoint',
