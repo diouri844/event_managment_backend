@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
-import homeController from "./controllers/index";
+import userController from './controllers/user.controller';
 const app = new Hono()
 
-app.get('/', homeController.home.ping)
-app.get('/test', homeController.home.test)
+app.route('/user', userController)
 export default app
