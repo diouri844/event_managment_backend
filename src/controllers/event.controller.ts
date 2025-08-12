@@ -1,4 +1,7 @@
 import { Context } from "hono";
+import { Events } from "../Db/schema";
+import EventServiceProvider from "../services/event.service";
+import { CreateVentDto, UpdateEventDto } from "../types/event.type";
 
 
 export function ping(c: Context) {
@@ -8,6 +11,7 @@ export function ping(c: Context) {
         status: 'success',
     });
 }
+const eventService = new EventServiceProvider();
 
 export async function listEvents(c: Context) {
     try {
@@ -15,7 +19,20 @@ export async function listEvents(c: Context) {
         const page = c.req.query('page') ? parseInt(c.req.query('page') as string) : 1;
         const limit = c.req.query('limit') ? parseInt(c.req.query('limit') as string) : 10;
         // call the service provider to et the needed dat : 
-        const eventList: any[] = [];
+        const paginationOption = {
+            limit: limit,
+            offset: (page - 1) * limit
+        };
+
+
+        const eventList: typeof Events.$inferSelect[] | null = await eventService.getAllEvents(paginationOption);
+        if (!eventList) {
+            return c.json({
+                message: 'No events found',
+                status: 'error',
+                data: []
+            });
+        }
         // time to return the data : 
         return c.json({
             message: 'Events fetched successfully',
@@ -35,10 +52,17 @@ export async function listEvents(c: Context) {
 export async function createEvent(c: Context) {
     try {
         // extract the event payload from the request body
-        const eventPayload = await c.req.json();
+        const eventPayload = await c.req.json() as CreateVentDto;
         // call the service provider to create new event : 
-        const createdEvent: any = {};
+        const createdEvent: typeof Events.$inferInsert | null = await eventService.createEvent(eventPayload);
         // time to return the data :
+        if (!createdEvent) {
+            return c.json({
+                message: 'Error creating event',
+                status: 'error',
+                data: null
+            });
+        }
         return c.json({
             message: 'Event created successfully',
             data: createdEvent,
@@ -55,12 +79,19 @@ export async function createEvent(c: Context) {
 export async function updateEvent(c: Context) {
     try {
         // extract the event ID from the request parameters
-        const eventId = c.req.param('id');
+        const eventId = parseInt(c.req.param('id'));
         // extract the updated event payload from the request body
-        const updatedEventPayload = await c.req.json();
+        const updatedEventPayload = await c.req.json() as UpdateEventDto;
         // call the service provider to update the event :
-        const updatedEvent: any = {};
+        const updatedEvent: typeof Events.$inferSelect | null = await eventService.updateEvent(eventId, updatedEventPayload);
         // time to return the data :
+        if (!updatedEvent) {
+            return c.json({
+                message: 'Error updating event',
+                status: 'error',
+                data: null
+            });
+        }
         return c.json({
             message: 'Event updated successfully',
             data: updatedEvent,
