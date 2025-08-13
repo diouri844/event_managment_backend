@@ -1,8 +1,8 @@
-import { Users } from "../Db/schema";
-import { UserSelect } from "../types/user.type";
+import { Role, Users } from "../Db/schema";
+import { CreateUserDto, UpdateUserDto, UserSelect } from "../types/user.type";
 import { db } from "../utils/instance.db";
 import { eq } from "drizzle-orm";
-
+import bcrypt from 'bcrypt';
 
 
 
@@ -42,4 +42,65 @@ export default class UserServiceProvider {
         }
     };
 
+    async checkUserNameUsed(username: string): Promise<boolean> {
+        try {
+            const userWithSameName = await db.select({ id: Users.id, username: Users.username })
+                .from(Users).where(eq(Users.username, username)).limit(1);
+            return userWithSameName.length > 0;
+        } catch (error) {
+            console.log("Service:Error checking username usage:", error);
+            return false;
+        }
+    }
+
+    async createUser(userPaylaod: CreateUserDto): Promise<UserSelect | null> {
+        try {
+            // Ensure the role is of the correct type
+            const userToInsert = {
+                ...userPaylaod,
+                role: userPaylaod.role as Role // Replace 'any' with 'Role' if you have the Role type imported
+            };
+            const result = await db.insert(Users).values(userToInsert).returning({
+                id: Users.id,
+                name: Users.username,
+                email: Users.email,
+                role: Users.role,
+            });
+            return result[0];
+        } catch (error) {
+            console.log("Service:Error creating user:", error);
+            return null;
+        }
+    }
+
+    async hashedPassword(password: string): Promise<string> {
+        // 1. Generate a salt
+        const saltRounds = 10; // Try an integer 10-12
+        const salt = await bcrypt.genSalt(saltRounds);
+
+        // 2. Hash the password using the salt
+        const hashedPassword: string = await bcrypt.hash(password, salt);
+        return hashedPassword;
+    }
+
+    async updateUserInfo(userId: number, userPayload: UpdateUserDto): Promise<UserSelect | null> {
+        try {
+            // Ensure the role is of the correct type if present
+            const payloadToUpdate = {
+                ...userPayload,
+                ...(userPayload.role !== undefined ? { role: userPayload.role as Role } : {})
+            } as UpdateUserDto
+
+            const result = await db.update(Users).set(payloadToUpdate).where(eq(Users.id, userId)).returning({
+                id: Users.id,
+                name: Users.username,
+                email: Users.email,
+                role: Users.role,
+            });
+            return result[0];
+        } catch (error) {
+            console.log("Service:Error updating user info:", error);
+            return null;
+        }
+    };
 };
