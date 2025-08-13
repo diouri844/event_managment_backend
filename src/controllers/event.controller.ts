@@ -110,7 +110,14 @@ export async function deleteEvent(c: Context) {
         // extract the event id form the request parameters
         const eventId = c.req.param('id');
         // call the service provider to delete the event :
-        const deletedEvent: any = {};
+        const deletedEvent: typeof Events.$inferSelect | null = await eventService.deleteEvent(parseInt(eventId));
+        if (!deletedEvent) {
+            return c.json({
+                message: 'Error deleting event',
+                status: 'error',
+                data: null
+            });
+        }
         // time to return the data :
         return c.json({
             message: 'Event deleted successfully',
@@ -130,8 +137,15 @@ export async function getEventById(c: Context) {
         // exyrat the event id from the req parameters : 
         const eventId = c.req.param('id');
         // call the service provider to get the event by ID :
-        const event: any = {};
+        const event: typeof Events.$inferSelect | null = await eventService.getEventById(parseInt(eventId));
         // time to return the data :
+        if (!event) {
+            return c.json({
+                message: 'Event not found',
+                status: 'error',
+                data: null
+            });
+        }
         return c.json({
             message: 'Event fetched successfully',
             data: event,
