@@ -1,17 +1,18 @@
+import { Role } from "../Db/schema";
 
 export type UserSelect = {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: Role;
 };
 
 export type User = {
-    id?: number;
+    id: number;
     username: string;
     email: string;
     password: string;
-    role: string;
+    role: Role;
     createdAt?: Date;
     updatedAt?: Date;
 };
