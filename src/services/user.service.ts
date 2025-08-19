@@ -42,7 +42,7 @@ export default class UserServiceProvider {
         }
     };
 
-    async checkUserNameUsed(username: string): Promise<boolean> {
+    private async checkUserNameUsed(username: string): Promise<boolean> {
         try {
             const userWithSameName = await db.select({ id: Users.id, username: Users.username })
                 .from(Users).where(eq(Users.username, username)).limit(1);
@@ -55,9 +55,19 @@ export default class UserServiceProvider {
 
     async createUser(userPaylaod: CreateUserDto): Promise<UserSelect | null> {
         try {
+
+            // cehck if user name already exists :
+            const isUserNameUsed = await this.checkUserNameUsed(userPaylaod.username);
+            if (isUserNameUsed) {
+                console.log("Service:Username already exists:", userPaylaod.username);
+                return null; // or throw an error
+            }
+
             // Ensure the role is of the correct type
+            const hasedPassword = await this.hashedPassword(userPaylaod.password);
             const userToInsert = {
                 ...userPaylaod,
+                password: hasedPassword,
                 role: userPaylaod.role as Role // Replace 'any' with 'Role' if you have the Role type imported
             };
             const result = await db.insert(Users).values(userToInsert).returning({
@@ -73,11 +83,10 @@ export default class UserServiceProvider {
         }
     }
 
-    async hashedPassword(password: string): Promise<string> {
+    private async hashedPassword(password: string): Promise<string> {
         // 1. Generate a salt
         const saltRounds = 10; // Try an integer 10-12
         const salt = await bcrypt.genSalt(saltRounds);
-
         // 2. Hash the password using the salt
         const hashedPassword: string = await bcrypt.hash(password, salt);
         return hashedPassword;
